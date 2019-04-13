@@ -1,0 +1,35 @@
+CREATE FUNCTION soundex(entireWord text) RETURNS text AS $$
+DECLARE
+	wordLength integer := char_length(entireWord);
+	letter text;
+	vowels text = 'aeiouyhw';
+	vowelsLength integer := char_length(vowels);
+	wordNoVowels text := '';
+	vowel text;
+	isFound boolean;
+BEGIN
+	
+	<< outside >>
+	FOR i IN 1..wordLength LOOP
+		SELECT a[i] INTO letter FROM (SELECT regexp_split_to_array(entireWord,'')) AS x(a);
+		<< inside >>
+		FOR j IN 1..vowelsLength LOOP
+			SELECT b[j] INTO vowel FROM (SELECT regexp_split_to_array(vowels,'')) AS x(b);
+			--IF regexp_matches(letter, vowel) THEN
+			IF letter = vowel THEN
+				isFound := true;
+				EXIT inside;
+			END IF;													   
+		END LOOP;
+		
+		IF isFound THEN
+			isFound := false;
+			CONTINUE;
+		END IF;
+		wordNoVowels := wordNoVowels || letter;
+	END LOOP;
+																	  
+	RETURN wordNoVowels;
+END;
+$$
+LANGUAGE plpgsql;
